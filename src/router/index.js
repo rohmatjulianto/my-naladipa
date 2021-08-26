@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/auth/Login.vue'
+import User from "../views/admin/User.vue";
 
 Vue.use(VueRouter)
 
@@ -10,6 +11,11 @@ const routes = [
     path: '/auth',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/user',
+    name: 'user',
+    component: User
   },
   {
     path: '/',

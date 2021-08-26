@@ -63,7 +63,9 @@ export default {
   created() {
     var session = this.$session.get("email");
     if (session) {
-      this.email = session;
+      auth.onAuthStateChanged((user) => {
+        this.email = user.email
+      });
     } else {
       this.toAuth();
     }
@@ -72,7 +74,6 @@ export default {
     return {
       items: [
         { title: "Dashboard", icon: "mdi-view-dashboard", link: "/" },
-        { title: "Menu", icon: "mdi-menu", link: "/menu" },
         { title: "Sejarah", icon: "mdi-note", link: "/sejarah" },
         { title: "Tentang", icon: "mdi-information-outline", link: "/about" },
         { title: "Wilayah", icon: "mdi-map-legend", link: "/wilayah" },
@@ -83,6 +84,8 @@ export default {
           icon: "mdi-map-marker-outline",
           link: "/warasuta",
         },
+        { title: "Menu", icon: "mdi-menu", link: "/menu" },
+        { title: "User", icon: "mdi-account", link: "/user" },
       ],
       drawer: null,
       email: "",

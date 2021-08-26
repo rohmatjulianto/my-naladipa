@@ -7,37 +7,41 @@
         class="mx-auto mb-10"
       ></v-img>
       <div class="title" align="center">Sign in <br />Admin Naladipa</div>
-      <v-form ref="form" v-model="valid" lazy-validation>
-        <v-text-field
-          v-model="email"
-          type="email"
-          label="Email"
-          :rules="emailRules"
-          required
-        >
-        </v-text-field>
-        <v-text-field
-          v-model="password"
-          label="Password"
-          type="password"
-          :rules="[(v) => !!v || 'Password is required']"
-          required
-        >
-        </v-text-field>
+      <v-card-text>
+        <v-form ref="form" v-model="valid" lazy-validation>
+          <v-text-field
+            v-model="email"
+            type="email"
+            label="Email"
+            :rules="emailRules"
+            required
+          >
+          </v-text-field>
+          <v-text-field
+            v-model="password"
+            label="Password"
+            type="password"
+            :rules="[(v) => !!v || 'Password is required']"
+            required
+          >
+          </v-text-field>
+        </v-form>
+      </v-card-text>
 
+      <v-card-actions class="justify-end">
         <v-btn
-          color="primary mt-5"
-          class="form-control"
+          class="text-capitalize"
+          color="primary"
           :loading="loading"
-          :disabled="loading"
+          :disabled="!valid"
           @click="auth"
         >
           Login
         </v-btn>
-        <v-btn color="warning mt-5 mx-5" class="form-control" @click="reset">
+        <v-btn class="text-capitalize" color="warning" @click="reset">
           Reset
         </v-btn>
-      </v-form>
+      </v-card-actions>
 
       <v-alert dense outlined type="error" v-if="alert" class="mt-5">
         {{ alertMessage }}
@@ -50,10 +54,10 @@
 import { auth } from "../../firebaseConfig";
 export default {
   name: "login",
-  created(){
-    var session = this.$session.get("email")
-    if(session){
-      this.toApp()
+  created() {
+    var session = this.$session.get("email");
+    if (session) {
+      this.toApp();
     }
   },
   methods: {
