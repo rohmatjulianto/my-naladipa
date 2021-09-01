@@ -80,9 +80,9 @@ export default {
         { title: "Prestasi", icon: "mdi-trophy-award", link: "/prestasi" },
         { title: "Museum Naladipa", icon: "mdi-bank-outline", link: "/museum" },
         {
-          title: "Wisata Alam Warasuta",
+          title: "Wisata Alam Wanasuta",
           icon: "mdi-map-marker-outline",
-          link: "/warasuta",
+          link: "/wanasuta",
         },
         { title: "Menu", icon: "mdi-menu", link: "/menu" },
         { title: "User", icon: "mdi-account", link: "/user" },
