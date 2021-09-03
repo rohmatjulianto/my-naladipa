@@ -6,6 +6,8 @@ import User from "../views/admin/User.vue"
 import History from "../views/admin/History.vue"
 import Museum from "../views/admin/Museum.vue"
 import Wanasuta from "../views/admin/Wanasuta.vue"
+import Awards from "../views/admin/Awards.vue"
+import Menu from "../views/admin/Menu.vue"
 
 Vue.use(VueRouter)
 
@@ -39,6 +41,16 @@ const routes = [
     path: '/sejarah',
     name: 'History',
     component: History
+  },
+  {
+    path: '/prestasi',
+    name: 'Prestasi',
+    component: Awards
+  },
+  {
+    path: '/menu',
+    name: 'Menu',
+    component: Menu
   },
   {
     path: '/about',
