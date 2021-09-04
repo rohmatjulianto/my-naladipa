@@ -7,7 +7,9 @@ import History from "../views/admin/History.vue"
 import Museum from "../views/admin/Museum.vue"
 import Wanasuta from "../views/admin/Wanasuta.vue"
 import Awards from "../views/admin/Awards.vue"
+import About from "../views/admin/About.vue"
 import Menu from "../views/admin/Menu.vue"
+import Wilayah from "../views/admin/Wilayah.vue"
 
 Vue.use(VueRouter)
 
@@ -53,12 +55,14 @@ const routes = [
     component: Menu
   },
   {
+    path: '/wilayah',
+    name: 'Wilayah',
+    component: Wilayah
+  },
+  {
     path: '/about',
     name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    component: About
   }
 ]
 

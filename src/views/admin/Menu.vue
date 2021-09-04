@@ -1,56 +1,89 @@
 <template>
   <v-container>
+    <v-dialog
+      v-model="dialogChange"
+      transition="dialog-top-transition"
+      max-width="560"
+    >
+      <template>
+        <v-card>
+          <v-toolbar color="primary" dark>
+            <v-icon icon left>mdi-alert-circle</v-icon>
+            {{ restChange.title }}
+            <v-spacer></v-spacer>
+            <v-btn
+              icon
+              @click="resetform"
+            >
+              <v-icon icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
+
+          <div class="justify-end mx-5 mt-8">
+            <v-form ref="form" lazy-validation v-model="valid">
+              <v-img :src="restChange.url" max-width="100"></v-img>
+              <v-file-input
+                show-size
+                v-model="restChange.image"
+                truncate-length="8"
+                label="Foto"
+                accept="image/*"
+                clearable
+                prepend-icon="mdi-camera"
+                :rules="[(v) => !!v || 'Image required']"
+                @change="onFilePicked"
+                @click:clear="onClear"
+              >
+                <template v-slot:selection="{ text }">
+                  <v-chip small label color="primary">
+                    {{ text }}
+                  </v-chip>
+                </template>
+              </v-file-input>
+
+              <v-textarea
+                rows="3"
+                row-height="30"
+                auto-grow
+                v-model="restChange.description"
+                :rules="[(v) => !!v || 'Description required']"
+                label="Description"
+                outlined
+                required
+              ></v-textarea>
+            </v-form>
+
+            <v-btn
+              class="mb-5 text-capitalize"
+              color="primary"
+              :loading="loading"
+              :disabled="!valid"
+              @click="onSubmit"
+              >Submit
+            </v-btn>
+          </div>
+        </v-card>
+      </template>
+    </v-dialog>
+
     <v-row>
       <v-col v-for="(rest, i) in result" :key="i" cols="12" md="4">
         <v-card class="my-6">
           <v-card-title> {{ rest.title }}</v-card-title>
           <img class="ma-8" :src="rest.image" alt="" width="100" srcset="" />
-
           <v-card-text>
-            <v-file-input
-              v-if="editState[i].editable"
-              show-size
-              v-model="imag"
-              truncate-length="8"
-              label="Foto"
-              accept="image/*"
-              prepend-icon="mdi-camera"
-              :rules="[(v) => !!v || 'Image required']"
-              @change="onFilePicked()"
-              @click:clear="onClear()"
-            >
-              <template v-slot:selection="{ text }">
-                <v-chip small label color="primary">
-                  {{ text }}
-                </v-chip>
-              </template>
-            </v-file-input>
-
-            <v-textarea
-              rows="3"
-              row-height="30"
-              auto-grow
-              v-model="rest.desc"
-              :rules="[(v) => !!v || 'Description required']"
-              label="Description"
-              outlined
-              required
-              :readonly="!editState[i].editable"
-            ></v-textarea>
-            <v-btn
-              color="warning"
-              v-if="!editState[i].editable"
-              dark
-              @click="canEdit(i)"
-            >
-              Edit
-            </v-btn>
-            <v-btn color="success" v-if="editState[i].editable" dark>
-              Save
-            </v-btn>
+            {{ rest.desc }}
           </v-card-text>
 
-          <v-card-actions> </v-card-actions>
+          <v-card-actions>
+            <v-btn
+              class="text-capitalize mx-1 mb-4"
+              color="warning"
+              @click="onChange(i)"
+              dark
+              >Edit</v-btn
+            >
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
@@ -58,7 +91,7 @@
 </template>
 
 <script>
-import { store } from "../../firebaseConfig";
+import { store, storage } from "../../firebaseConfig";
 export default {
   created() {
     var task = [];
@@ -70,8 +103,13 @@ export default {
         var title = datas.get("title");
         var image = datas.get("image");
         var desc = datas.get("description");
-        task.push({ id: id, title: title, image: image, desc: desc });
-        this.editState.push({ editable: false });
+        task.push({
+          id: id,
+          title: title,
+          image: image,
+          url: null,
+          desc: desc,
+        });
       });
     });
     observer;
@@ -79,37 +117,85 @@ export default {
   },
   data() {
     return {
+      dialogChange: false,
       editState: [],
       result: [],
-      btnAdd: true,
-      loading: false,
+      restChange: {
+        id: "",
+        image: "",
+        url: "",
+        description: "",
+        title: "",
+      },
       valid: true,
-      title: null,
-      link: null,
+      loading: false,
     };
   },
   methods: {
-    canEdit(i) {
-      this.editState[i].editable = true;
+    onChange(i) {
+      this.dialogChange = true;
+      this.restChange.id = this.result[i].id;
+      this.restChange.description = this.result[i].desc;
+      this.restChange.url = this.result[i].image;
+      this.restChange.title = this.result[i].title;
+      console.log(this.restChange);
     },
     onSubmit() {
       if (this.$refs.form.validate()) {
         this.loading = true;
-        const db = store.collection("wanasuta").doc();
-        db.set({
-          id: this.result.length,
-          title: this.title,
-          link: this.link,
+        const db = store.collection("menu").doc(this.restChange.id);
+        db.update({
+          description: this.restChange.description,
         }).then(() => {
-          this.loading = false;
-          this.resetform();
+          this.uploadImage(this.restChange.id);
+        });
+      }
+    },
+
+    uploadImage(id) {
+      const files = this.restChange.image;
+      const path = id + "/" + files.name;
+      storage
+        .ref(path)
+        .put(files)
+        .then((snapshot) => {
+          if (snapshot.state == "success") {
+            storage
+              .ref(path)
+              .getDownloadURL()
+              .then((url) => {
+                this.updateImageUrl(id, url);
+              });
+          }
+        });
+    },
+    updateImageUrl(id, url) {
+      const db = store.collection("menu").doc(id);
+      db.update({ image: url }).then(() => {
+        this.loading = false;
+        this.dialogChange = false;
+        this.resetform()
+      });
+    },
+    onFilePicked() {
+      if (window.FileReader) {
+        const files = this.restChange.image;
+        const fr = new FileReader();
+        fr.readAsDataURL(files);
+        fr.addEventListener("load", () => {
+          this.restChange.url = fr.result;
         });
       }
     },
 
     resetform() {
-      this.$refs.form.reset();
-      this.showHideForm(false);
+      this.dialogChange = false
+      this.restChange.id = null;
+      this.restChange.description = null;
+      this.restChange.image = null;
+      this.restChange.url = null;
+      this.restChange.title = null;
+      this.$refs.form.resetValidation()
     },
     showHideForm(con) {
       this.btnAdd = !con;
